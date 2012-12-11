@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		CD7D4714166E69F400F5079B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7D4713166E69F400F5079B /* OpenGL.framework */; };
 		CD7D4716166E69FA00F5079B /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7D4715166E69FA00F5079B /* GLUT.framework */; };
+		CDBE00711671AB5A007DA5BE /* Sphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CDBE006F1671AB5A007DA5BE /* Sphere.cpp */; };
+		CDBE00741671BBEC007DA5BE /* Ray.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CDBE00721671BBEC007DA5BE /* Ray.cpp */; };
 		CDDE8F97166FD24B0049FE49 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CDDE8F95166FD24B0049FE49 /* main.cpp */; };
 /* End PBXBuildFile section */
 
@@ -25,9 +27,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CD1729341676826F0049C0B2 /* vecmath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vecmath.h; sourceTree = "<group>"; };
 		CD7D4706166E69E800F5079B /* Ray Tracer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Ray Tracer"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD7D4713166E69F400F5079B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		CD7D4715166E69FA00F5079B /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		CDBE006F1671AB5A007DA5BE /* Sphere.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sphere.cpp; sourceTree = "<group>"; };
+		CDBE00701671AB5A007DA5BE /* Sphere.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sphere.h; sourceTree = "<group>"; };
+		CDBE00721671BBEC007DA5BE /* Ray.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Ray.cpp; sourceTree = "<group>"; };
+		CDBE00731671BBEC007DA5BE /* Ray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ray.h; sourceTree = "<group>"; };
 		CDDE8F95166FD24B0049FE49 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		CDDE8F96166FD24B0049FE49 /* Ray_Tracer_1.1 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.man; path = Ray_Tracer_1.1; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -68,6 +75,11 @@
 			children = (
 				CDDE8F95166FD24B0049FE49 /* main.cpp */,
 				CDDE8F96166FD24B0049FE49 /* Ray_Tracer_1.1 */,
+				CDBE006F1671AB5A007DA5BE /* Sphere.cpp */,
+				CDBE00701671AB5A007DA5BE /* Sphere.h */,
+				CDBE00721671BBEC007DA5BE /* Ray.cpp */,
+				CDBE00731671BBEC007DA5BE /* Ray.h */,
+				CD1729341676826F0049C0B2 /* vecmath.h */,
 			);
 			path = "Ray Tracer";
 			sourceTree = "<group>";
@@ -124,6 +136,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CDDE8F97166FD24B0049FE49 /* main.cpp in Sources */,
+				CDBE00711671AB5A007DA5BE /* Sphere.cpp in Sources */,
+				CDBE00741671BBEC007DA5BE /* Ray.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
