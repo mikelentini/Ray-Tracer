@@ -14,13 +14,12 @@
 
 class Ray {
     public:
-        Ray(Vector3 origin, Vector3 vector, float distance);
+        Ray(Vector3 origin, Vector3 vector);
     
         Vector3 direction, origin;
-        float distance;
     
-        bool intersectsSphere(Sphere sphere);
-        Vector3 getClosestIntersection(Sphere sphere);
+        bool intersectsSphere(Sphere *sphere);
+        Vector3 getClosestIntersection(Sphere *sphere);
 };
 
 #endif /* defined(__Ray_Tracer__Ray__) */

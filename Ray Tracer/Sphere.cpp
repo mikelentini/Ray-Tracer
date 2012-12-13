@@ -8,7 +8,7 @@
 
 #include "Sphere.h"
 
-Sphere::Sphere(float x, float y, float z, int radius, float *color) {
+Sphere::Sphere(double x, double y, double z, int radius, int *color) {
     this->x = x;
     this->y = y;
     this->z = z;

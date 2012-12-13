@@ -13,11 +13,11 @@
 
 class Sphere {
     public:
-        Sphere(float x, float y, float z, int radius, float *color);
+        Sphere(double x, double y, double z, int radius, int *color);
         
-        float x, y, z;
+        double x, y, z;
         int radius;
-        float *color;
+        int *color;
 };
 
 #endif /* defined(__Ray_Tracer__Sphere__) */
