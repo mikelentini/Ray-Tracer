@@ -8,7 +8,6 @@
 #include <iostream>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
-#include <cmath>
 
 #include "Sphere.h"
 #include "Ray.h"
@@ -28,7 +27,7 @@ int yellow[] = { 255, 242, 0 };
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
-const double VIEWING_Z = -1.0f;
+const double VIEWING_Z = -60.0f;
 
 Sphere *smallSphere;
 Sphere *largeSphere;
@@ -38,7 +37,7 @@ void setMainViewport(int width, int height) {
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, width, 0, height, -1, 1);
+    gluOrtho2D(-width / 2, width / 2, -height / 2, height / 2);
     
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -48,8 +47,8 @@ void traceRays(int width, int height) {
     int r, g, b;
     Ray *ray;
     
-    for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
+    for (int x = -width / 2; x < width / 2; x++) {
+        for (int y = -height / 2; y < height / 2; y++) {
             r = 0;
             g = 165;
             b = 248;
@@ -60,22 +59,18 @@ void traceRays(int width, int height) {
                 r = largeSphere->color[0];
                 g = largeSphere->color[1];
                 b = largeSphere->color[2];
-                
-                //cout << "hit " << x << ", " << y << endl;
             } else if (ray->intersectsSphere(smallSphere)) {
                 r = smallSphere->color[0];
                 g = smallSphere->color[1];
                 b = smallSphere->color[2];
-                
-                //cout << "hit" << endl;
             }
             
             glBegin(GL_POINTS);
                 glColor3ub(r, g, b);
-                glVertex2i(x, y);
+                glVertex3i(x, y, 0);
             glEnd();
             
-            free(ray);
+            delete(ray);
         }
     }
 }
@@ -92,24 +87,19 @@ void display() {
 	traceRays(width, height);
     
 	glutSwapBuffers();
-    //glutPostRedisplay();
+    glutPostRedisplay();
 }
 
 void init() {
-	glClearColor(0.0, 0.64706, 0.97255, 0.0);
+    glClearColor(0.0, 0.65, 0.97, 0.0);
     
-    float h2 = WINDOW_HEIGHT / 2;
-    float w2 = WINDOW_WIDTH / 2;
-    
-    //smallSphere = new Sphere(-13, -8, -52, 9, red);
-    //largeSphere = new Sphere(0, 0, -40, 10, green);
-    smallSphere = new Sphere(w2 - 13, h2 - 8, -52, 9, red);
-    largeSphere = new Sphere(w2, h2, -40, 39, green);
+    smallSphere = new Sphere(Vector3(-55, -25, -50), 36, red);
+    largeSphere = new Sphere(Vector3(0, 0, -45), 40, green);
 }
 
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
-	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("Ray Tracer");

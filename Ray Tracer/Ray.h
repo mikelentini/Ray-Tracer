@@ -2,8 +2,7 @@
 //  Ray.h
 //  Ray Tracer
 //
-//  Created by Mike Lentini on 12/7/12.
-//  Copyright (c) 2012 Mike Lentini. All rights reserved.
+//  Mike Lentini
 //
 
 #ifndef __Ray_Tracer__Ray__
