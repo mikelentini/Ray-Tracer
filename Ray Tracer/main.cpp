@@ -27,7 +27,11 @@ int yellow[] = { 255, 242, 0 };
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
-const double VIEWING_Z = -60.0f;
+const double VIEWING_Z = -700.0f;
+
+const Vector3 cameraPos = Vector3(0, 0, 200);
+const Vector3 smallSpherePos = Vector3(-55, -25, -85);
+const Vector3 largeSpherePos = Vector3(0, 0, -45);
 
 Sphere *smallSphere;
 Sphere *largeSphere;
@@ -53,7 +57,7 @@ void traceRays(int width, int height) {
             g = 165;
             b = 248;
             
-            ray = new Ray(Vector3(0, 0, 0), Vector3(x, y, VIEWING_Z));
+            ray = new Ray(cameraPos, Vector3(x, y, VIEWING_Z));
             
             if (ray->intersectsSphere(largeSphere)) {
                 r = largeSphere->color[0];
@@ -67,7 +71,7 @@ void traceRays(int width, int height) {
             
             glBegin(GL_POINTS);
                 glColor3ub(r, g, b);
-                glVertex3i(x, y, 0);
+                glVertex2i(x, y);
             glEnd();
             
             delete(ray);
@@ -76,25 +80,25 @@ void traceRays(int width, int height) {
 }
 
 void display() {
-	int width = glutGet(GLUT_WINDOW_WIDTH);
-	int height = glutGet(GLUT_WINDOW_HEIGHT);
-    
-	glClear(GL_COLOR_BUFFER_BIT);
-	glLoadIdentity();
-    
-	setMainViewport(width, height);
-    
-	traceRays(width, height);
-    
-	glutSwapBuffers();
+    int width = glutGet(GLUT_WINDOW_WIDTH);
+    int height = glutGet(GLUT_WINDOW_HEIGHT);
+
+    glClear(GL_COLOR_BUFFER_BIT);
+    glLoadIdentity();
+
+    setMainViewport(width, height);
+
+    traceRays(width, height);
+
+    glutSwapBuffers();
     glutPostRedisplay();
 }
 
 void init() {
     glClearColor(0.0, 0.65, 0.97, 0.0);
     
-    smallSphere = new Sphere(Vector3(-55, -25, -50), 36, red);
-    largeSphere = new Sphere(Vector3(0, 0, -45), 40, green);
+    smallSphere = new Sphere(smallSpherePos, 36, red);
+    largeSphere = new Sphere(largeSpherePos, 40, green);
 }
 
 int main(int argc, char** argv) {
