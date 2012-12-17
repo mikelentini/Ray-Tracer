@@ -30,7 +30,7 @@ const int WINDOW_HEIGHT = 600;
 const double VIEWING_Z = -700.0f;
 
 const Vector3 cameraPos = Vector3(0, 0, 200);
-const Vector3 smallSpherePos = Vector3(-55, -25, -85);
+const Vector3 smallSpherePos = Vector3(-55, -25, -115);
 const Vector3 largeSpherePos = Vector3(0, 0, -45);
 
 Sphere *smallSphere;
@@ -97,7 +97,7 @@ void display() {
 void init() {
     glClearColor(0.0, 0.65, 0.97, 0.0);
     
-    smallSphere = new Sphere(smallSpherePos, 36, red);
+    smallSphere = new Sphere(smallSpherePos, 40, red);
     largeSphere = new Sphere(largeSpherePos, 40, green);
 }
 
