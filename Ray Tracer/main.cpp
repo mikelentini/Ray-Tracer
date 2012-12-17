@@ -28,6 +28,8 @@ int yellow[] = { 255, 242, 0 };
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
+const bool SUPERSAMPLING = true;
+
 const double VIEWING_Z = -700.0f;
 
 const Vector3 cameraPos = Vector3(0, 0, 200);
@@ -79,8 +81,6 @@ void traceRays(int width, int height) {
                 r = plane->color[0];
                 g = plane->color[1];
                 b = plane->color[2];
-                
-                //cout << "hit" << endl;
             }
             
             glBegin(GL_POINTS);
