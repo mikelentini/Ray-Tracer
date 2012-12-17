@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CD0D4B5E167EAB550027046F /* Plane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CD0D4B5C167EAB550027046F /* Plane.cpp */; };
 		CD7D4714166E69F400F5079B /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7D4713166E69F400F5079B /* OpenGL.framework */; };
 		CD7D4716166E69FA00F5079B /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD7D4715166E69FA00F5079B /* GLUT.framework */; };
 		CDBE00711671AB5A007DA5BE /* Sphere.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CDBE006F1671AB5A007DA5BE /* Sphere.cpp */; };
@@ -27,6 +28,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CD0D4B5C167EAB550027046F /* Plane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Plane.cpp; sourceTree = "<group>"; };
+		CD0D4B5D167EAB550027046F /* Plane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Plane.h; sourceTree = "<group>"; };
 		CD1729341676826F0049C0B2 /* vecmath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vecmath.h; sourceTree = "<group>"; };
 		CD7D4706166E69E800F5079B /* Ray Tracer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Ray Tracer"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD7D4713166E69F400F5079B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -80,6 +83,8 @@
 				CDBE00721671BBEC007DA5BE /* Ray.cpp */,
 				CDBE00731671BBEC007DA5BE /* Ray.h */,
 				CD1729341676826F0049C0B2 /* vecmath.h */,
+				CD0D4B5C167EAB550027046F /* Plane.cpp */,
+				CD0D4B5D167EAB550027046F /* Plane.h */,
 			);
 			path = "Ray Tracer";
 			sourceTree = "<group>";
@@ -138,6 +143,7 @@
 				CDDE8F97166FD24B0049FE49 /* main.cpp in Sources */,
 				CDBE00711671AB5A007DA5BE /* Sphere.cpp in Sources */,
 				CDBE00741671BBEC007DA5BE /* Ray.cpp in Sources */,
+				CD0D4B5E167EAB550027046F /* Plane.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -10,6 +10,7 @@
 
 #include "vecmath.h"
 #include "Sphere.h"
+#include "Plane.h"
 
 class Ray {
     public:
@@ -19,6 +20,8 @@ class Ray {
     
         bool intersectsSphere(Sphere *sphere);
         Vector3 getClosestIntersection(Sphere *sphere);
+    
+        bool intersectsPlane(Plane *plane);
 };
 
 #endif /* defined(__Ray_Tracer__Ray__) */

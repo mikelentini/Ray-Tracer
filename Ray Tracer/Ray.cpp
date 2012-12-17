@@ -55,3 +55,15 @@ Vector3 Ray::getClosestIntersection(Sphere *sphere) {
                        this->origin.z + this->direction.z * ti);
 }
 
+bool Ray::intersectsPlane(Plane *plane) {
+    double w =  -(plane->normal * this->origin + abs(plane->y)) / (plane->normal * this->direction);
+    
+    if (w <= 0) return false;
+    
+    Vector3 point = Vector3(this->origin.x + this->direction.x * w,
+                                 this->origin.y + this->direction.y * w,
+                                 this->origin.z + this->direction.z * w);
+    
+    return !(point.x > plane->maxX || point.x < plane->minX);
+}
+

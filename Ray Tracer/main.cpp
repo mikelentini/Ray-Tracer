@@ -11,6 +11,7 @@
 
 #include "Sphere.h"
 #include "Ray.h"
+#include "Plane.h"
 
 #if defined(__APPLE__) && defined(__MACH__)
 #include <GLUT/glut.h>
@@ -30,11 +31,18 @@ const int WINDOW_HEIGHT = 600;
 const double VIEWING_Z = -700.0f;
 
 const Vector3 cameraPos = Vector3(0, 0, 200);
+
 const Vector3 smallSpherePos = Vector3(-55, -25, -115);
 const Vector3 largeSpherePos = Vector3(0, 0, -45);
-
+const int SPHERE_RADIUS = 40;
 Sphere *smallSphere;
 Sphere *largeSphere;
+
+const Vector3 planeNormal = Vector3(0, 1, 0);
+const int PLANE_Y = -25;
+const int PLANE_MIN_X = -80;
+const int PLANE_MAX_X = 35;
+Plane *plane;
 
 void setMainViewport(int width, int height) {
     glViewport(0, 0, width, height);
@@ -67,6 +75,12 @@ void traceRays(int width, int height) {
                 r = smallSphere->color[0];
                 g = smallSphere->color[1];
                 b = smallSphere->color[2];
+            } else if (ray->intersectsPlane(plane)) {
+                r = plane->color[0];
+                g = plane->color[1];
+                b = plane->color[2];
+                
+                //cout << "hit" << endl;
             }
             
             glBegin(GL_POINTS);
@@ -97,8 +111,10 @@ void display() {
 void init() {
     glClearColor(0.0, 0.65, 0.97, 0.0);
     
-    smallSphere = new Sphere(smallSpherePos, 40, red);
-    largeSphere = new Sphere(largeSpherePos, 40, green);
+    smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, red);
+    largeSphere = new Sphere(largeSpherePos, SPHERE_RADIUS, green);
+    
+    plane = new Plane(planeNormal, PLANE_Y, PLANE_MIN_X, PLANE_MAX_X, yellow);
 }
 
 int main(int argc, char** argv) {
