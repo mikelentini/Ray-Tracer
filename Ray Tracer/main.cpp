@@ -89,7 +89,7 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
     } else {
         Vector3 s = lightPosition - point;
         Vector3 v = cameraPos - point;
-        Vector3 n = sphere->origin - point;//point - sphere->origin;
+        Vector3 n = point - sphere->origin;
 
         s.normalize();
         v.normalize();
