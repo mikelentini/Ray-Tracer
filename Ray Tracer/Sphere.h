@@ -13,11 +13,13 @@
 
 class Sphere {
     public:
-        Sphere(Vector3 origin, double radius, int *color);
+        Sphere(Vector3 origin, double radius, float *ambColor, float *specColor, float *diffColor);
         
         Vector3 origin;
         double radius;
-        int *color;
+        float *ambColor;
+        float *specColor;
+        float *diffColor;
 };
 
 #endif /* defined(__Ray_Tracer__Sphere__) */

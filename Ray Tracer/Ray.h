@@ -14,12 +14,13 @@
 
 class Ray {
     public:
-        Ray(Vector3 origin, Vector3 vector);
+        Ray(Vector3 origin, Vector3 direction);
     
         Vector3 direction, origin;
     
         bool intersectsSphere(Sphere *sphere);
         Vector3 getClosestIntersection(Sphere *sphere);
+        Vector3 getClosestIntersection(Plane *plane);
     
         bool intersectsPlane(Plane *plane);
 };

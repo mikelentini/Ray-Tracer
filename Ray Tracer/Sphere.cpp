@@ -7,8 +7,10 @@
 
 #include "Sphere.h"
 
-Sphere::Sphere(Vector3 origin, double radius, int *color) {
+Sphere::Sphere(Vector3 origin, double radius, float *ambColor, float *specColor, float *diffColor) {
     this->origin = origin;
     this->radius = radius;
-    this->color = color;
+    this->ambColor = ambColor;
+    this->specColor = specColor;
+    this->diffColor = diffColor;
 }

@@ -14,11 +14,11 @@
 
 class Plane {
     public:
-        Plane(Vector3 normal, int y, int minX, int maxX, int *color);
+        Plane(Vector3 normal, int y, int minX, int maxX, float *color);
         
         int y, minX, maxX;
         Vector3 normal;
-        int *color;
+        float *color;
 };
 
 #endif /* defined(__Ray_Tracer__Plane__) */

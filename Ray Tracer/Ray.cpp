@@ -18,10 +18,6 @@ bool Ray::intersectsSphere(Sphere *sphere) {
     //A = Xd^2 + Yd^2 + Zd^2 = 1 if d is normalized
     //B = 2 * (Xd * (X0 - Xc) + Yd * (Y0 - Yc) + Zd * (Z0 - Zc))
     //C = (X0 - Xc)^2 + (Y0 - Yc)^2 + (Z0 - Zc)^2 - Sr^2
-    
-    // (x0 - xc)
-    // (y0 - yc)
-    // (z0 - zc)
     double x = this->origin.x - sphere->origin.x;
     double y = this->origin.y - sphere->origin.y;
     double z = this->origin.z - sphere->origin.z;
@@ -40,9 +36,8 @@ Vector3 Ray::getClosestIntersection(Sphere *sphere) {
     double y = this->origin.y - sphere->origin.y;
     double z = this->origin.z - sphere->origin.z;
     
-    //double a = pow(this->direction.x, 2) + pow(this->direction.y, 2) + pow(this->direction.z, 2);
     double b = 2 * (this->direction.x * x + this->direction.y * y + this->direction.z * z);
-    double c = x * x + y * y + z * z - (sphere->radius * sphere->radius);
+    double c = (x * x) + (y * y) + (z * z) - (sphere->radius * sphere->radius);
     
     double ti = (-b - (sqrt(b * b - 4 * c))) / 2;
     
@@ -65,5 +60,13 @@ bool Ray::intersectsPlane(Plane *plane) {
                                  this->origin.z + this->direction.z * w);
     
     return !(point.x > plane->maxX || point.x < plane->minX);
+}
+
+Vector3 Ray::getClosestIntersection(Plane *plane) {
+    double w =  -(plane->normal * this->origin + abs(plane->y)) / (plane->normal * this->direction);
+    
+    return Vector3(this->origin.x + this->direction.x * w,
+                            this->origin.y + this->direction.y * w,
+                            this->origin.z + this->direction.z * w);
 }
 

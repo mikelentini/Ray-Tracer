@@ -8,7 +8,7 @@
 
 #include "Plane.h"
 
-Plane::Plane(Vector3 normal, int y, int minX, int maxX, int *color) {
+Plane::Plane(Vector3 normal, int y, int minX, int maxX, float *color) {
     this->normal = normal;
     this->y = y;
     this->minX = minX;
