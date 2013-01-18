@@ -71,6 +71,10 @@ void setMainViewport(int width, int height) {
     glLoadIdentity();
 }
 
+bool isEven(int x) {
+    return x % 2 == 0;
+}
+
 void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
     float r, g, b;
     Sphere sphere2 = (sphere == largeSphere) ? *smallSphere : *largeSphere;
@@ -83,9 +87,8 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
     double ambComponent[] = {Ka * La[0], Ka * La[1], Ka * La[2]};
     
     Ray *shadowRay = new Ray(point, lightPosition);
-    Ray *shadowRayTwo = new Ray(point, lightTwoPosition);
     
-    if (shadowRay->intersectsSphere(&sphere2) || shadowRayTwo->intersectsSphere(&sphere2)) {
+    if (shadowRay->intersectsSphere(&sphere2)) {
         r = ambComponent[0];
         g = ambComponent[1];
         b = ambComponent[2];
@@ -154,12 +157,23 @@ void traceRays(int width, int height) {
             } else if (ray->intersectsPlane(plane)) {
                 Vector3 point = ray->getClosestIntersection(plane);
                 Ray *shadowRay = new Ray(point, lightPosition);
-                Ray *shadowRayTwo = new Ray(point, lightTwoPosition);
+                
+                int xRemainder = ((int) point.x) % 15;
+                int xRounded = ((int) point.x) - xRemainder;
+                
+                int zRemainder = ((int) point.z) % 15;
+                int zRounded = ((int) point.z) - zRemainder;
+                
+                // checker pattern
+                if ((isEven(xRounded / 2) && isEven(zRounded / 2)) ||
+                        (!isEven(xRounded / 2) && !isEven(zRounded / 2))) {
+                    plane->color = red;
+                } else {
+                    plane->color = yellow;
+                }
                 
                 if (shadowRay->intersectsSphere(largeSphere) ||
-                        shadowRay->intersectsSphere(smallSphere) ||
-                        shadowRayTwo->intersectsSphere(largeSphere) ||
-                        shadowRayTwo->intersectsSphere(smallSphere)) {
+                        shadowRay->intersectsSphere(smallSphere)) {
                     rgb[0] = plane->color[0] * ambLight[0];
                     rgb[1] = plane->color[1] * ambLight[1];
                     rgb[2] = plane->color[2] * ambLight[2];
@@ -192,7 +206,7 @@ void display() {
     traceRays(width, height);
 
     glutSwapBuffers();
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 void init() {
