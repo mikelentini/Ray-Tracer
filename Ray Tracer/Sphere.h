@@ -20,6 +20,14 @@ class Sphere {
         float *ambColor;
         float *specColor;
         float *diffColor;
+    
+        float Ka = 0.5f;
+        float Kd = 0.5f;
+        float Ks = 0.3f;
+        float Ke = 10.0f;
+    
+        float Kr = 0.0f;
+        float Kt = 0.0f;
 };
 
 #endif /* defined(__Ray_Tracer__Sphere__) */

@@ -13,8 +13,6 @@
 #include "Ray.h"
 #include "Plane.h"
 
-#include <complex>
-
 #if defined(__APPLE__) && defined(__MACH__)
 #include <GLUT/glut.h>
 #else
@@ -28,11 +26,16 @@ float green[] = { 0, 1.0f, 0 };
 float yellow[] = { 1.0f, 0.95f, 0 };
 float white[] = { 1.0f, 1.0f, 1.0f };
 float black[] = { 0.0f, 0.0f, 0.0f };
+float background[] = { 0.0f, 0.65f, 0.97f };
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
 const double VIEWING_Z = -700.0f;
+
+const float AA_OFFSET = 0.6f;
+
+const int MAX_DEPTH = 5;
 
 Vector3 cameraPos = Vector3(0, 0, 200);
 
@@ -50,11 +53,6 @@ Plane *plane;
 
 float ambLight[] = {0.5f, 0.5f, 0.5f};
 float lightColor[] = {1.0f, 1.0f, 1.0f};
-
-float Ka = 0.5f;
-float Kd = 0.5f;
-float Ks = 0.3f;
-float Ke = 10.0f;
 
 Vector3 lightPosition = Vector3(10, 100, 50);
 
@@ -84,7 +82,7 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
         sphere->ambColor[1] * ambLight[1],
         sphere->ambColor[2] * ambLight[2]};
     
-    double ambComponent[] = {Ka * La[0], Ka * La[1], Ka * La[2]};
+    double ambComponent[] = {sphere->Ka * La[0], sphere->Ka * La[1], sphere->Ka * La[2]};
     
     Ray *shadowRay = new Ray(point, lightPosition);
     
@@ -109,22 +107,21 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
             lightColor[1] * sphere->diffColor[1],
             lightColor[2] * sphere->diffColor[2]};
         float sn = s * n;
-        double diffComponent[] = {Kd * (Li[0] * sn), Kd * (Li[1] * sn), Kd * (Li[2] * sn)};
+        double diffComponent[] = {sphere->Kd * (Li[0] * sn), sphere->Kd * (Li[1] * sn), sphere->Kd * (Li[2] * sn)};
 
         Li[0] = lightColor[0] * sphere->specColor[0];
         Li[1] = lightColor[1] * sphere->specColor[1];
         Li[2] = lightColor[2] * sphere->specColor[2];
         
         // phong
-        float rvke = powf(ref * v, Ke);
-        double specComponent[] = {Ks * (Li[0] * rvke), Ks * (Li[1] * rvke), Ks * (Li[2] * rvke)};
+        float rvke = powf(ref * v, sphere->Ke);
+        double specComponent[] = {sphere->Ks * (Li[0] * rvke), sphere->Ks * (Li[1] * rvke), sphere->Ks * (Li[2] * rvke)};
         
         // blinn
         /*Vector3 h = (v + s);
         h.normalize();
-        float spec = pow(h * n, Ke);
-        
-        double specComponent[] = { Ks * (Li[0] * spec), Ks * (Li[1] * spec), Ks * (Li[2] * spec) };*/
+        float spec = pow(h * n, sphere->Ke);
+        double specComponent[] = { sphere->Ks * (Li[0] * spec), sphere->Ks * (Li[1] * spec), sphere->Ks * (Li[2] * spec) };*/
 
         r = ambComponent[0] + diffComponent[0] + specComponent[0];
         g = ambComponent[1] + diffComponent[1] + specComponent[1];
@@ -138,51 +135,55 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
     delete(shadowRay);
 }
 
-void traceRays(int width, int height) {
+void traceRay(Ray *ray, float rgb[]) {
+    if (ray->intersectsSphere(largeSphere)) {
+        getRgb(ray, largeSphere, rgb);
+    } else if (ray->intersectsSphere(smallSphere)) {
+        getRgb(ray, smallSphere, rgb);
+    } else if (ray->intersectsPlane(plane)) {
+        Vector3 point = ray->getClosestIntersection(plane);
+        Ray *shadowRay = new Ray(point, lightPosition);
+        
+        int xRemainder = ((int) point.x) % 15;
+        int xRounded = ((int) point.x) - xRemainder;
+        
+        int zRemainder = ((int) point.z) % 15;
+        int zRounded = ((int) point.z) - zRemainder;
+        
+        // checker pattern
+        if ((isEven(xRounded / 2) && isEven(zRounded / 2)) ||
+            (!isEven(xRounded / 2) && !isEven(zRounded / 2))) {
+            plane->color = red;
+        } else {
+            plane->color = yellow;
+        }
+        
+        if (shadowRay->intersectsSphere(largeSphere) ||
+            shadowRay->intersectsSphere(smallSphere)) {
+            rgb[0] = plane->color[0] * ambLight[0];
+            rgb[1] = plane->color[1] * ambLight[1];
+            rgb[2] = plane->color[2] * ambLight[2];
+        } else {
+            rgb[0] = plane->color[0];
+            rgb[1] = plane->color[1];
+            rgb[2] = plane->color[2];
+        }
+    }
+}
+
+void shootRays(int width, int height) {
     float rgb[3];
     Ray *ray;
     
     for (int x = -width / 2; x < width / 2; x++) {
         for (int y = -height / 2; y < height / 2; y++) {
-            rgb[0] = 0.0f;
-            rgb[1] = 0.65f;
-            rgb[2] = 0.97f;
+            rgb[0] = background[0];
+            rgb[1] = background[1];
+            rgb[2] = background[2];
             
             ray = new Ray(cameraPos, Vector3(x, y, VIEWING_Z));
             
-            if (ray->intersectsSphere(largeSphere)) {
-                getRgb(ray, largeSphere, rgb);
-            } else if (ray->intersectsSphere(smallSphere)) {
-                getRgb(ray, smallSphere, rgb);
-            } else if (ray->intersectsPlane(plane)) {
-                Vector3 point = ray->getClosestIntersection(plane);
-                Ray *shadowRay = new Ray(point, lightPosition);
-                
-                int xRemainder = ((int) point.x) % 15;
-                int xRounded = ((int) point.x) - xRemainder;
-                
-                int zRemainder = ((int) point.z) % 15;
-                int zRounded = ((int) point.z) - zRemainder;
-                
-                // checker pattern
-                if ((isEven(xRounded / 2) && isEven(zRounded / 2)) ||
-                        (!isEven(xRounded / 2) && !isEven(zRounded / 2))) {
-                    plane->color = red;
-                } else {
-                    plane->color = yellow;
-                }
-                
-                if (shadowRay->intersectsSphere(largeSphere) ||
-                        shadowRay->intersectsSphere(smallSphere)) {
-                    rgb[0] = plane->color[0] * ambLight[0];
-                    rgb[1] = plane->color[1] * ambLight[1];
-                    rgb[2] = plane->color[2] * ambLight[2];
-                } else {
-                    rgb[0] = plane->color[0];
-                    rgb[1] = plane->color[1];
-                    rgb[2] = plane->color[2];
-                }
-            }
+            traceRay(ray, rgb);
             
             glBegin(GL_POINTS);
                 glColor3f(rgb[0], rgb[1], rgb[2]);
@@ -203,16 +204,18 @@ void display() {
 
     setMainViewport(width, height);
 
-    traceRays(width, height);
+    shootRays(width, height);
 
     glutSwapBuffers();
-    //glutPostRedisplay();
+    glutPostRedisplay();
 }
 
 void init() {
     glClearColor(0.0, 0.65, 0.97, 0.0);
     
     smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, red, red, red);
+    smallSphere->Kr = 0.9f;
+    
     largeSphere = new Sphere(largeSpherePos, SPHERE_RADIUS, green, green, green);
     
     plane = new Plane(planeNormal, PLANE_Y, PLANE_MIN_X, PLANE_MAX_X, yellow);
@@ -228,8 +231,6 @@ void specialKey(int key, int x, int y) {
     } else if (key == GLUT_KEY_DOWN) {
         lightPosition.z += 10;
     }
-    
-    cout << lightPosition << endl;
 }
 
 void keyPress(unsigned char c, int x, int y) {
@@ -238,8 +239,6 @@ void keyPress(unsigned char c, int x, int y) {
     } else if (c == 'z') {
         lightPosition.y -= 10;
     }
-    
-    cout << lightPosition << endl;
 }
 
 int main(int argc, char** argv) {
