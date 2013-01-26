@@ -33,8 +33,6 @@ const int WINDOW_HEIGHT = 600;
 
 const double VIEWING_Z = -700.0f;
 
-const float AA_OFFSET = 0.6f;
-
 const int MAX_DEPTH = 5;
 
 Vector3 cameraPos = Vector3(0, 0, 200);
@@ -135,39 +133,43 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
     delete(shadowRay);
 }
 
+void getRgb(Ray *ray, Plane *plane, float rgb[]) {
+    Vector3 point = ray->getClosestIntersection(plane);
+    Ray *shadowRay = new Ray(point, lightPosition);
+    
+    int xRemainder = ((int) point.x) % 15;
+    int xRounded = ((int) point.x) - xRemainder;
+    
+    int zRemainder = ((int) point.z) % 15;
+    int zRounded = ((int) point.z) - zRemainder;
+    
+    // checker pattern
+    if ((isEven(xRounded / 2) && isEven(zRounded / 2)) ||
+        (!isEven(xRounded / 2) && !isEven(zRounded / 2))) {
+        plane->color = red;
+    } else {
+        plane->color = yellow;
+    }
+    
+    if (shadowRay->intersectsSphere(largeSphere) ||
+        shadowRay->intersectsSphere(smallSphere)) {
+        rgb[0] = plane->color[0] * ambLight[0];
+        rgb[1] = plane->color[1] * ambLight[1];
+        rgb[2] = plane->color[2] * ambLight[2];
+    } else {
+        rgb[0] = plane->color[0];
+        rgb[1] = plane->color[1];
+        rgb[2] = plane->color[2];
+    }
+}
+
 void traceRay(Ray *ray, float rgb[]) {
     if (ray->intersectsSphere(largeSphere)) {
         getRgb(ray, largeSphere, rgb);
     } else if (ray->intersectsSphere(smallSphere)) {
         getRgb(ray, smallSphere, rgb);
     } else if (ray->intersectsPlane(plane)) {
-        Vector3 point = ray->getClosestIntersection(plane);
-        Ray *shadowRay = new Ray(point, lightPosition);
-        
-        int xRemainder = ((int) point.x) % 15;
-        int xRounded = ((int) point.x) - xRemainder;
-        
-        int zRemainder = ((int) point.z) % 15;
-        int zRounded = ((int) point.z) - zRemainder;
-        
-        // checker pattern
-        if ((isEven(xRounded / 2) && isEven(zRounded / 2)) ||
-            (!isEven(xRounded / 2) && !isEven(zRounded / 2))) {
-            plane->color = red;
-        } else {
-            plane->color = yellow;
-        }
-        
-        if (shadowRay->intersectsSphere(largeSphere) ||
-            shadowRay->intersectsSphere(smallSphere)) {
-            rgb[0] = plane->color[0] * ambLight[0];
-            rgb[1] = plane->color[1] * ambLight[1];
-            rgb[2] = plane->color[2] * ambLight[2];
-        } else {
-            rgb[0] = plane->color[0];
-            rgb[1] = plane->color[1];
-            rgb[2] = plane->color[2];
-        }
+        getRgb(ray, plane, rgb);
     }
 }
 
