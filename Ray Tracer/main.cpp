@@ -94,21 +94,21 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
         Vector3 s = lightPosition - point;
         Vector3 v = cameraPos - point;
         Vector3 n = point - sphere->origin;
-
+        
         s.normalize();
         v.normalize();
         n.normalize();
-
+        
         Vector3 ref = s - 2 * (s * n) * n;
         
         ref.normalize();
-
+        
         float Li[] = {lightColor[0] * sphere->diffColor[0],
             lightColor[1] * sphere->diffColor[1],
             lightColor[2] * sphere->diffColor[2]};
         float sn = s * n;
         double diffComponent[] = {sphere->Kd * (Li[0] * sn), sphere->Kd * (Li[1] * sn), sphere->Kd * (Li[2] * sn)};
-
+        
         Li[0] = lightColor[0] * sphere->specColor[0];
         Li[1] = lightColor[1] * sphere->specColor[1];
         Li[2] = lightColor[2] * sphere->specColor[2];
@@ -119,10 +119,10 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
         
         // blinn
         /*Vector3 h = (v + s);
-        h.normalize();
-        float spec = pow(h * n, sphere->Ke);
-        double specComponent[] = { sphere->Ks * (Li[0] * spec), sphere->Ks * (Li[1] * spec), sphere->Ks * (Li[2] * spec) };*/
-
+         h.normalize();
+         float spec = pow(h * n, sphere->Ke);
+         double specComponent[] = { sphere->Ks * (Li[0] * spec), sphere->Ks * (Li[1] * spec), sphere->Ks * (Li[2] * spec) };*/
+        
         r = ambComponent[0] + diffComponent[0] + specComponent[0];
         g = ambComponent[1] + diffComponent[1] + specComponent[1];
         b = ambComponent[2] + diffComponent[2] + specComponent[2];
@@ -173,7 +173,14 @@ void traceRay(Ray *ray, float rgb[]) {
 
 void shootRays(int width, int height) {
     float rgb[3];
+    float rgb2[3];
+    float rgb3[3];
+    float rgb4[3];
+    
     Ray *ray;
+    Ray *ray2;
+    Ray *ray3;
+    Ray *ray4;
     
     for (int x = -width / 2; x < width / 2; x++) {
         for (int y = -height / 2; y < height / 2; y++) {
@@ -181,13 +188,35 @@ void shootRays(int width, int height) {
             rgb[1] = background[1];
             rgb[2] = background[2];
             
+            rgb2[0] = background[0];
+            rgb2[1] = background[1];
+            rgb2[2] = background[2];
+            
+            rgb3[0] = background[0];
+            rgb3[1] = background[1];
+            rgb3[2] = background[2];
+            
+            rgb4[0] = background[0];
+            rgb4[1] = background[1];
+            rgb4[2] = background[2];
+            
             ray = new Ray(cameraPos, Vector3(x, y, VIEWING_Z));
+            ray2 = new Ray(cameraPos, Vector3(x + AA_OFFSET, y + AA_OFFSET, VIEWING_Z));
+            ray3 = new Ray(cameraPos, Vector3(x - AA_OFFSET, y + AA_OFFSET, VIEWING_Z));
+            ray4 = new Ray(cameraPos, Vector3(x - AA_OFFSET, y - AA_OFFSET, VIEWING_Z));
             
             traceRay(ray, rgb);
+            traceRay(ray2, rgb2);
+            traceRay(ray3, rgb3);
+            traceRay(ray4, rgb4);
+            
+            rgb[0] = (rgb[0] + rgb2[0] + rgb3[0] + rgb4[0]) / 4.0f;
+            rgb[1] = (rgb[1] + rgb2[1] + rgb3[1] + rgb4[1]) / 4.0f;
+            rgb[2] = (rgb[2] + rgb2[2] + rgb3[2] + rgb4[2]) / 4.0f;
             
             glBegin(GL_POINTS);
-                glColor3f(rgb[0], rgb[1], rgb[2]);
-                glVertex2i(x, y);
+            glColor3f(rgb[0], rgb[1], rgb[2]);
+            glVertex2i(x, y);
             glEnd();
             
             delete(ray);
@@ -198,14 +227,14 @@ void shootRays(int width, int height) {
 void display() {
     int width = glutGet(GLUT_WINDOW_WIDTH);
     int height = glutGet(GLUT_WINDOW_HEIGHT);
-
+    
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
-
+    
     setMainViewport(width, height);
-
+    
     shootRays(width, height);
-
+    
     glutSwapBuffers();
     glutPostRedisplay();
 }
