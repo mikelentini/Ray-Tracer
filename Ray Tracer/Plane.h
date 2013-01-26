@@ -19,6 +19,8 @@ class Plane {
         int y, minX, maxX;
         Vector3 normal;
         float *color;
+        float Kr = 0.0f;
+        float Kt = 0.0f;
 };
 
 #endif /* defined(__Ray_Tracer__Plane__) */
