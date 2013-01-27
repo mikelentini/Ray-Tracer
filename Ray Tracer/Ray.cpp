@@ -59,7 +59,7 @@ bool Ray::intersectsPlane(Plane *plane) {
                                  this->origin.y + this->direction.y * w,
                                  this->origin.z + this->direction.z * w);
     
-    return !(point.x > plane->maxX || point.x < plane->minX);
+    return !(point.x > plane->maxX || point.x < plane->minX || point.z < -1250 || point.z > 50);
 }
 
 Vector3 Ray::getClosestIntersection(Plane *plane) {

@@ -38,7 +38,8 @@ const int MAX_DEPTH = 5;
 Vector3 cameraPos = Vector3(0, 0, 200);
 
 const Vector3 smallSpherePos = Vector3(-55, -25, -115);
-const Vector3 largeSpherePos = Vector3(0, 0, -45);
+//const Vector3 largeSpherePos = Vector3(0, 0, -45);
+const Vector3 largeSpherePos = Vector3(40, 0, -125);
 const int SPHERE_RADIUS = 40;
 Sphere *smallSphere;
 Sphere *largeSphere;
@@ -71,14 +72,13 @@ bool isEven(int x) {
     return x % 2 == 0;
 }
 
-void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
+void getRgb(Ray *ray, Sphere *sphere, Vector3 point, float rgb[]) {
     float r, g, b;
     Sphere sphere2 = (sphere == largeSphere) ? *smallSphere : *largeSphere;
     
-    Vector3 point = ray->getClosestIntersection(sphere);
-    float La[] = {sphere->ambColor[0] * ambLight[0],
+    float La[] = { sphere->ambColor[0] * ambLight[0],
         sphere->ambColor[1] * ambLight[1],
-        sphere->ambColor[2] * ambLight[2]};
+        sphere->ambColor[2] * ambLight[2] };
     
     double ambComponent[] = {sphere->Ka * La[0], sphere->Ka * La[1], sphere->Ka * La[2]};
     
@@ -163,11 +163,41 @@ void getRgb(Ray *ray, Plane *plane, float rgb[]) {
     }
 }
 
-void traceRay(Ray *ray, float rgb[]) {
+void illuminate(Ray *ray, int depth, float rgb[]) {
+    rgb[0] = background[0];
+    rgb[1] = background[1];
+    rgb[2] = background[2];
+    
     if (ray->intersectsSphere(largeSphere)) {
-        getRgb(ray, largeSphere, rgb);
+        Vector3 point = ray->getClosestIntersection(largeSphere);
+        getRgb(ray, largeSphere, point, rgb);
     } else if (ray->intersectsSphere(smallSphere)) {
-        getRgb(ray, smallSphere, rgb);
+        Vector3 point = ray->getClosestIntersection(smallSphere);
+        getRgb(ray, smallSphere, point, rgb);
+        
+        if (depth < MAX_DEPTH) {
+            if (smallSphere->Kr > 0.0f) {
+                Vector3 n = point - smallSphere->origin;
+                n.normalize();
+                
+                Vector3 i(ray->direction.x, ray->direction.y, ray->direction.z);
+                i.normalize();
+                point.normalize();
+                Ray reflection(point, i - 2 * n * (i * n));
+                
+                float newRGB[3];
+                
+                illuminate(&reflection, depth + 1, newRGB);
+                
+                newRGB[0] *= smallSphere->Kr;
+                newRGB[1] *= smallSphere->Kr;
+                newRGB[2] *= smallSphere->Kr;
+                
+                rgb[0] += newRGB[0];
+                rgb[1] += newRGB[1];
+                rgb[2] += newRGB[2];
+            }
+        }
     } else if (ray->intersectsPlane(plane)) {
         getRgb(ray, plane, rgb);
     }
@@ -179,13 +209,9 @@ void shootRays(int width, int height) {
     
     for (int x = -width / 2; x < width / 2; x++) {
         for (int y = -height / 2; y < height / 2; y++) {
-            rgb[0] = background[0];
-            rgb[1] = background[1];
-            rgb[2] = background[2];
-            
             ray = new Ray(cameraPos, Vector3(x, y, VIEWING_Z));
             
-            traceRay(ray, rgb);
+            illuminate(ray, 1, rgb);
             
             glBegin(GL_POINTS);
                 glColor3f(rgb[0], rgb[1], rgb[2]);
@@ -216,7 +242,7 @@ void init() {
     glClearColor(0.0, 0.65, 0.97, 0.0);
     
     smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, red, red, red);
-    smallSphere->Kr = 0.9f;
+    smallSphere->Kr = 20.0f;
     
     largeSphere = new Sphere(largeSpherePos, SPHERE_RADIUS, green, green, green);
     
