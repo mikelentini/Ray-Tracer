@@ -34,7 +34,7 @@ const int WINDOW_HEIGHT = 600;
 
 const double VIEWING_Z = -700.0f;
 
-const int MAX_DEPTH = 2;
+const int MAX_DEPTH = 5;
 
 Vector3 cameraPos = Vector3(0, 0, 200);
 
@@ -166,8 +166,30 @@ void illuminate(Ray *ray, int depth, float rgb[], Sphere *prev) {
     rgb[1] = background[1];
     rgb[2] = background[2];
     
-    if (ray->intersectsSphere(largeSphere)) {
-        getRgb(ray, largeSphere, rgb);
+    if (ray->intersectsSphere(largeSphere) && prev != largeSphere) {
+        Vector3 point = ray->getClosestIntersection(largeSphere);
+        
+        getRgb(largeSphere, point, rgb);
+        
+        if (depth < MAX_DEPTH) {
+            if (largeSphere->Kr > 0.0f) {
+                float newRGB[3];
+                Ray *reflection;
+                Vector3 n = point - largeSphere->origin;
+                Vector3 i(ray->direction);
+                n.normalize();
+                
+                reflection = new Ray(point, i - 2 * (i * n) * n);
+                
+                illuminate(reflection, depth + 1, newRGB, largeSphere);
+                
+                delete(reflection);
+                
+                rgb[0] += newRGB[0] * largeSphere->Kr;
+                rgb[1] += newRGB[1] * largeSphere->Kr;
+                rgb[2] += newRGB[2] * largeSphere->Kr;
+            }
+        }
     } else if (ray->intersectsSphere(smallSphere) && prev != smallSphere) {
         Vector3 point = ray->getClosestIntersection(smallSphere);
         
@@ -180,8 +202,6 @@ void illuminate(Ray *ray, int depth, float rgb[], Sphere *prev) {
                 Vector3 n = point - smallSphere->origin;
                 Vector3 i(ray->direction);
                 n.normalize();
-                
-                point += n;
                 
                 reflection = new Ray(point, i - 2 * (i * n) * n);
                 
@@ -238,7 +258,6 @@ void init() {
     glClearColor(0.0, 0.65, 0.97, 0.0);
     
     smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, gray, gray, gray);
-    //smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, black, black, black);
     smallSphere->Kr = 0.9f;
     
     largeSphere = new Sphere(largeSpherePos, SPHERE_RADIUS, green, green, green);
