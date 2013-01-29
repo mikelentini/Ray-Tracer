@@ -21,9 +21,10 @@
 
 using namespace std;
 
-float red[] = { 1.0f, 0, 0 };
-float green[] = { 0, 1.0f, 0 };
-float yellow[] = { 1.0f, 0.95f, 0 };
+float red[] = { 1.0f, 0.0f, 0.0f };
+float green[] = { 0.0f, 1.0f, 0.0f };
+float gray[] = { 0.7f, 0.7f, 0.7f };
+float yellow[] = { 1.0f, 0.95f, 0.0f };
 float white[] = { 1.0f, 1.0f, 1.0f };
 float black[] = { 0.0f, 0.0f, 0.0f };
 float background[] = { 0.0f, 0.65f, 0.97f };
@@ -170,9 +171,6 @@ void illuminate(Ray *ray, int depth, float rgb[], Sphere *prev) {
     } else if (ray->intersectsSphere(smallSphere) && prev != smallSphere) {
         Vector3 point = ray->getClosestIntersection(smallSphere);
         
-        //if (depth != 1) cout << ray->origin << " " << point << " " << depth << endl;
-        //if (depth > 1 && previousSphere == smallSphere) return;
-        
         getRgb(smallSphere, point, rgb);
         
         if (depth < MAX_DEPTH) {
@@ -239,8 +237,9 @@ void display() {
 void init() {
     glClearColor(0.0, 0.65, 0.97, 0.0);
     
-    smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, red, red, red);
-    smallSphere->Kr = 20.0f;
+    smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, gray, gray, gray);
+    //smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, black, black, black);
+    smallSphere->Kr = 0.9f;
     
     largeSphere = new Sphere(largeSpherePos, SPHERE_RADIUS, green, green, green);
     

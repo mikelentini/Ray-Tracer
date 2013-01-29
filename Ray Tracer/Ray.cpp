@@ -18,15 +18,6 @@ bool Ray::intersectsSphere(Sphere *sphere) {
     //A = Xd^2 + Yd^2 + Zd^2 = 1 if d is normalized
     //B = 2 * (Xd * (X0 - Xc) + Yd * (Y0 - Yc) + Zd * (Z0 - Zc))
     //C = (X0 - Xc)^2 + (Y0 - Yc)^2 + (Z0 - Zc)^2 - Sr^2
-    /*double x = this->origin.x - sphere->origin.x;
-    double y = this->origin.y - sphere->origin.y;
-    double z = this->origin.z - sphere->origin.z;
-    
-    double b = 2 * (this->direction.x * x + this->direction.y * y + this->direction.z * z);
-    double c = (x * x) + (y * y) + (z * z) - (sphere->radius * sphere->radius);
-    
-    return ((b * b - 4 * c) >= 0);*/
-    
     double x = this->origin.x - sphere->origin.x;
     double y = this->origin.y - sphere->origin.y;
     double z = this->origin.z - sphere->origin.z;
