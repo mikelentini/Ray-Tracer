@@ -33,13 +33,12 @@ const int WINDOW_HEIGHT = 600;
 
 const double VIEWING_Z = -700.0f;
 
-const int MAX_DEPTH = 5;
+const int MAX_DEPTH = 2;
 
 Vector3 cameraPos = Vector3(0, 0, 200);
 
 const Vector3 smallSpherePos = Vector3(-55, -25, -115);
-//const Vector3 largeSpherePos = Vector3(0, 0, -45);
-const Vector3 largeSpherePos = Vector3(40, 0, -125);
+const Vector3 largeSpherePos = Vector3(0, 0, -45);
 const int SPHERE_RADIUS = 40;
 Sphere *smallSphere;
 Sphere *largeSphere;
@@ -72,7 +71,7 @@ bool isEven(int x) {
     return x % 2 == 0;
 }
 
-void getRgb(Ray *ray, Sphere *sphere, Vector3 point, float rgb[]) {
+void getRgb(Sphere *sphere, Vector3 point, float rgb[]) {
     float r, g, b;
     Sphere sphere2 = (sphere == largeSphere) ? *smallSphere : *largeSphere;
     
@@ -80,7 +79,7 @@ void getRgb(Ray *ray, Sphere *sphere, Vector3 point, float rgb[]) {
         sphere->ambColor[1] * ambLight[1],
         sphere->ambColor[2] * ambLight[2] };
     
-    double ambComponent[] = {sphere->Ka * La[0], sphere->Ka * La[1], sphere->Ka * La[2]};
+    double ambComponent[] = { sphere->Ka * La[0], sphere->Ka * La[1], sphere->Ka * La[2] };
     
     Ray *shadowRay = new Ray(point, lightPosition);
     
@@ -101,25 +100,18 @@ void getRgb(Ray *ray, Sphere *sphere, Vector3 point, float rgb[]) {
         
         ref.normalize();
 
-        float Li[] = {lightColor[0] * sphere->diffColor[0],
+        float Li[] = { lightColor[0] * sphere->diffColor[0],
             lightColor[1] * sphere->diffColor[1],
-            lightColor[2] * sphere->diffColor[2]};
+            lightColor[2] * sphere->diffColor[2] };
         float sn = s * n;
-        double diffComponent[] = {sphere->Kd * (Li[0] * sn), sphere->Kd * (Li[1] * sn), sphere->Kd * (Li[2] * sn)};
+        double diffComponent[] = { sphere->Kd * (Li[0] * sn), sphere->Kd * (Li[1] * sn), sphere->Kd * (Li[2] * sn) };
 
         Li[0] = lightColor[0] * sphere->specColor[0];
         Li[1] = lightColor[1] * sphere->specColor[1];
         Li[2] = lightColor[2] * sphere->specColor[2];
         
-        // phong
         float rvke = powf(ref * v, sphere->Ke);
-        double specComponent[] = {sphere->Ks * (Li[0] * rvke), sphere->Ks * (Li[1] * rvke), sphere->Ks * (Li[2] * rvke)};
-        
-        // blinn
-        /*Vector3 h = (v + s);
-        h.normalize();
-        float spec = pow(h * n, sphere->Ke);
-        double specComponent[] = { sphere->Ks * (Li[0] * spec), sphere->Ks * (Li[1] * spec), sphere->Ks * (Li[2] * spec) };*/
+        double specComponent[] = { sphere->Ks * (Li[0] * rvke), sphere->Ks * (Li[1] * rvke), sphere->Ks * (Li[2] * rvke) };
 
         r = ambComponent[0] + diffComponent[0] + specComponent[0];
         g = ambComponent[1] + diffComponent[1] + specComponent[1];
@@ -131,6 +123,11 @@ void getRgb(Ray *ray, Sphere *sphere, Vector3 point, float rgb[]) {
     rgb[2] = b;
     
     delete(shadowRay);
+}
+
+void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
+    Vector3 point = ray->getClosestIntersection(sphere);
+    getRgb(sphere, point, rgb);
 }
 
 void getRgb(Ray *ray, Plane *plane, float rgb[]) {
@@ -163,39 +160,40 @@ void getRgb(Ray *ray, Plane *plane, float rgb[]) {
     }
 }
 
-void illuminate(Ray *ray, int depth, float rgb[]) {
+void illuminate(Ray *ray, int depth, float rgb[], Sphere *prev) {
     rgb[0] = background[0];
     rgb[1] = background[1];
     rgb[2] = background[2];
     
     if (ray->intersectsSphere(largeSphere)) {
-        Vector3 point = ray->getClosestIntersection(largeSphere);
-        getRgb(ray, largeSphere, point, rgb);
-    } else if (ray->intersectsSphere(smallSphere)) {
+        getRgb(ray, largeSphere, rgb);
+    } else if (ray->intersectsSphere(smallSphere) && prev != smallSphere) {
         Vector3 point = ray->getClosestIntersection(smallSphere);
-        getRgb(ray, smallSphere, point, rgb);
+        
+        //if (depth != 1) cout << ray->origin << " " << point << " " << depth << endl;
+        //if (depth > 1 && previousSphere == smallSphere) return;
+        
+        getRgb(smallSphere, point, rgb);
         
         if (depth < MAX_DEPTH) {
             if (smallSphere->Kr > 0.0f) {
+                float newRGB[3];
+                Ray *reflection;
                 Vector3 n = point - smallSphere->origin;
+                Vector3 i(ray->direction);
                 n.normalize();
                 
-                Vector3 i(ray->direction.x, ray->direction.y, ray->direction.z);
-                i.normalize();
-                point.normalize();
-                Ray reflection(point, i - 2 * n * (i * n));
+                point += n;
                 
-                float newRGB[3];
+                reflection = new Ray(point, i - 2 * (i * n) * n);
                 
-                illuminate(&reflection, depth + 1, newRGB);
+                illuminate(reflection, depth + 1, newRGB, smallSphere);
                 
-                newRGB[0] *= smallSphere->Kr;
-                newRGB[1] *= smallSphere->Kr;
-                newRGB[2] *= smallSphere->Kr;
+                delete(reflection);
                 
-                rgb[0] += newRGB[0];
-                rgb[1] += newRGB[1];
-                rgb[2] += newRGB[2];
+                rgb[0] += newRGB[0] * smallSphere->Kr;
+                rgb[1] += newRGB[1] * smallSphere->Kr;
+                rgb[2] += newRGB[2] * smallSphere->Kr;
             }
         }
     } else if (ray->intersectsPlane(plane)) {
@@ -211,7 +209,7 @@ void shootRays(int width, int height) {
         for (int y = -height / 2; y < height / 2; y++) {
             ray = new Ray(cameraPos, Vector3(x, y, VIEWING_Z));
             
-            illuminate(ray, 1, rgb);
+            illuminate(ray, 1, rgb, 0);
             
             glBegin(GL_POINTS);
                 glColor3f(rgb[0], rgb[1], rgb[2]);
@@ -235,7 +233,7 @@ void display() {
     shootRays(width, height);
 
     glutSwapBuffers();
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 void init() {
