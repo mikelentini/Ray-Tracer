@@ -28,6 +28,8 @@ class Sphere {
     
         float Kr = 0.0f;
         float Kt = 0.0f;
+    
+        float Nt = 0.0f;
 };
 
 #endif /* defined(__Ray_Tracer__Sphere__) */

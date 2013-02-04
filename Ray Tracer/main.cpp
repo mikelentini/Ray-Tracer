@@ -34,7 +34,7 @@ const int WINDOW_HEIGHT = 600;
 
 const double VIEWING_Z = -700.0f;
 
-const int MAX_DEPTH = 5;
+const int MAX_DEPTH = 6;
 
 Vector3 cameraPos = Vector3(0, 0, 200);
 
@@ -56,6 +56,8 @@ float lightColor[] = {1.0f, 1.0f, 1.0f};
 Vector3 lightPosition = Vector3(10, 100, 50);
 
 Vector3 lightTwoPosition = Vector3(-50, 100, 50);
+
+float Ni = 1.0f;
 
 void setMainViewport(int width, int height) {
     glViewport(0, 0, width, height);
@@ -161,51 +163,96 @@ void getRgb(Ray *ray, Plane *plane, float rgb[]) {
     }
 }
 
-void illuminate(Ray *ray, int depth, float rgb[], Sphere *prev) {
+void illuminate(Ray *ray, int depth, float rgb[]) {
     rgb[0] = background[0];
     rgb[1] = background[1];
     rgb[2] = background[2];
     
-    if (ray->intersectsSphere(largeSphere) && prev != largeSphere) {
+    if (ray->intersectsSphere(largeSphere)) {
         Vector3 point = ray->getClosestIntersection(largeSphere);
         
         getRgb(largeSphere, point, rgb);
         
         if (depth < MAX_DEPTH) {
-            if (largeSphere->Kr > 0.0f) {
+            Vector3 n = point - largeSphere->origin;
+            Vector3 i(ray->direction);
+            n.normalize();
+            
+            bool inside = ((-i * n) < 0);
+            
+            if (largeSphere->Kr > 0.0f && !inside) {
                 float newRGB[3];
                 Ray *reflection;
-                Vector3 n = point - largeSphere->origin;
-                Vector3 i(ray->direction);
-                n.normalize();
+                
+                point += n * 0.01f;
                 
                 reflection = new Ray(point, i - 2 * (i * n) * n);
                 
-                illuminate(reflection, depth + 1, newRGB, largeSphere);
+                illuminate(reflection, depth + 1, newRGB);
                 
                 delete(reflection);
                 
                 rgb[0] += newRGB[0] * largeSphere->Kr;
                 rgb[1] += newRGB[1] * largeSphere->Kr;
                 rgb[2] += newRGB[2] * largeSphere->Kr;
+                
+                point -= n * 0.01f;
+            }
+            
+            if (largeSphere->Kt > 0.0f) {
+                float newRGB[3];
+                Ray *transmission;
+                float Nit = Ni / largeSphere->Nt;
+                
+                if (inside) {
+                    Nit = largeSphere->Nt / Ni;
+                    n *= -1;
+                }
+                
+                float discriminate = 1 + (pow(Nit, 2) * (pow(-i * n, 2) - 1));
+                
+                point -= n * 0.001f;
+                
+                if (discriminate >= 0.0f) {
+                    transmission = new Ray(point, Nit * i +
+                                            (Nit * (-i * n) -
+                                             sqrt(discriminate)) * n
+                                           );
+                } else {
+                    transmission = new Ray(point, i - 2 * (i * n) * n);
+                }
+                
+                illuminate(transmission, depth + 1, newRGB);
+                
+                delete(transmission);
+                
+                rgb[0] += newRGB[0] * largeSphere->Kt;
+                rgb[1] += newRGB[1] * largeSphere->Kt;
+                rgb[2] += newRGB[2] * largeSphere->Kt;
             }
         }
-    } else if (ray->intersectsSphere(smallSphere) && prev != smallSphere) {
+    } else if (ray->intersectsSphere(smallSphere)) {
         Vector3 point = ray->getClosestIntersection(smallSphere);
         
         getRgb(smallSphere, point, rgb);
         
         if (depth < MAX_DEPTH) {
-            if (smallSphere->Kr > 0.0f) {
+            Vector3 n = point - smallSphere->origin;
+            Vector3 i(ray->direction);
+            n.normalize();
+            bool inside = (-i * n < 0);
+            
+            if (inside) n *= -1;
+            
+            point += n * 0.01f;
+            
+            if (smallSphere->Kr > 0.0f && !inside) {
                 float newRGB[3];
                 Ray *reflection;
-                Vector3 n = point - smallSphere->origin;
-                Vector3 i(ray->direction);
-                n.normalize();
                 
                 reflection = new Ray(point, i - 2 * (i * n) * n);
                 
-                illuminate(reflection, depth + 1, newRGB, smallSphere);
+                illuminate(reflection, depth + 1, newRGB);
                 
                 delete(reflection);
                 
@@ -227,7 +274,7 @@ void shootRays(int width, int height) {
         for (int y = -height / 2; y < height / 2; y++) {
             ray = new Ray(cameraPos, Vector3(x, y, VIEWING_Z));
             
-            illuminate(ray, 1, rgb, 0);
+            illuminate(ray, 1, rgb);
             
             glBegin(GL_POINTS);
                 glColor3f(rgb[0], rgb[1], rgb[2]);
@@ -257,10 +304,13 @@ void display() {
 void init() {
     glClearColor(0.0, 0.65, 0.97, 0.0);
     
-    smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, gray, gray, gray);
-    smallSphere->Kr = 0.9f;
+    smallSphere = new Sphere(smallSpherePos, SPHERE_RADIUS, white, white, white);
+    smallSphere->Kr = 0.75f;
     
-    largeSphere = new Sphere(largeSpherePos, SPHERE_RADIUS, green, green, green);
+    largeSphere = new Sphere(largeSpherePos, SPHERE_RADIUS, gray, white, gray);
+    largeSphere->Kr = 0.1f;
+    largeSphere->Nt = 0.95f;
+    largeSphere->Kt = 0.85f;
     
     plane = new Plane(planeNormal, PLANE_Y, PLANE_MIN_X, PLANE_MAX_X, yellow);
 }

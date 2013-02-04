@@ -20,6 +20,8 @@ class Ray {
     
         bool intersectsSphere(Sphere *sphere);
         Vector3 getClosestIntersection(Sphere *sphere);
+        Vector3 getFurthestIntersection(Sphere *sphere);
+    
         Vector3 getClosestIntersection(Plane *plane);
     
         bool intersectsPlane(Plane *plane);

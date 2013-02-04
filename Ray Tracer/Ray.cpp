@@ -56,6 +56,24 @@ Vector3 Ray::getClosestIntersection(Sphere *sphere) {
                        this->origin.z + this->direction.z * ti);
 }
 
+Vector3 Ray::getFurthestIntersection(Sphere *sphere) {
+    //t0 (-), t1 (+) = (-B +- (B^2 - 4*C)^1/2) / 2
+    // if t0 is positive, use it. else compute t1
+    
+    double x = this->origin.x - sphere->origin.x;
+    double y = this->origin.y - sphere->origin.y;
+    double z = this->origin.z - sphere->origin.z;
+    
+    double b = 2 * (this->direction.x * x + this->direction.y * y + this->direction.z * z);
+    double c = (x * x) + (y * y) + (z * z) - (sphere->radius * sphere->radius);
+    
+    double ti = (-b + sqrt(b * b - 4 * c)) / 2;
+    
+    return Vector3(this->origin.x + this->direction.x * ti,
+                   this->origin.y + this->direction.y * ti,
+                   this->origin.z + this->direction.z * ti);
+}
+
 bool Ray::intersectsPlane(Plane *plane) {
     double w =  -(plane->normal * this->origin + abs(plane->y)) / (plane->normal * this->direction);
     
