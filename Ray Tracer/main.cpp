@@ -242,13 +242,11 @@ void illuminate(Ray *ray, int depth, float rgb[]) {
             n.normalize();
             bool inside = (-i * n < 0);
             
-            if (inside) n *= -1;
-            
-            point += n * 0.01f;
-            
             if (smallSphere->Kr > 0.0f && !inside) {
                 float newRGB[3];
                 Ray *reflection;
+                
+                point += n * 0.01f;
                 
                 reflection = new Ray(point, i - 2 * (i * n) * n);
                 
@@ -259,6 +257,40 @@ void illuminate(Ray *ray, int depth, float rgb[]) {
                 rgb[0] += newRGB[0] * smallSphere->Kr;
                 rgb[1] += newRGB[1] * smallSphere->Kr;
                 rgb[2] += newRGB[2] * smallSphere->Kr;
+                
+                point -= n * 0.01f;
+            }
+            
+            if (smallSphere->Kt > 0.0f) {
+                float newRGB[3];
+                Ray *transmission;
+                float Nit = Ni / smallSphere->Nt;
+                
+                if (inside) {
+                    Nit = smallSphere->Nt / Ni;
+                    n *= -1;
+                }
+                
+                float discriminate = 1 + (pow(Nit, 2) * (pow(-i * n, 2) - 1));
+                
+                point -= n * 0.001f;
+                
+                if (discriminate >= 0.0f) {
+                    transmission = new Ray(point, Nit * i +
+                                           (Nit * (-i * n) -
+                                            sqrt(discriminate)) * n
+                                           );
+                } else {
+                    transmission = new Ray(point, i - 2 * (i * n) * n);
+                }
+                
+                illuminate(transmission, depth + 1, newRGB);
+                
+                delete(transmission);
+                
+                rgb[0] += newRGB[0] * smallSphere->Kt;
+                rgb[1] += newRGB[1] * smallSphere->Kt;
+                rgb[2] += newRGB[2] * smallSphere->Kt;
             }
         }
     } else if (ray->intersectsPlane(plane)) {
