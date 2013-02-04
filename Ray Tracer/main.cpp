@@ -8,6 +8,7 @@
 #include <iostream>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
+#include <vector>
 
 #include "Sphere.h"
 #include "Ray.h"
@@ -21,6 +22,7 @@
 
 using namespace std;
 
+// colors
 float red[] = { 1.0f, 0.0f, 0.0f };
 float green[] = { 0.0f, 1.0f, 0.0f };
 float gray[] = { 0.7f, 0.7f, 0.7f };
@@ -29,35 +31,40 @@ float white[] = { 1.0f, 1.0f, 1.0f };
 float black[] = { 0.0f, 0.0f, 0.0f };
 float background[] = { 0.0f, 0.65f, 0.97f };
 
+// window info
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
-const double VIEWING_Z = -700.0f;
-
+// max recursion depth
 const int MAX_DEPTH = 6;
 
+// camera info
 Vector3 cameraPos = Vector3(0, 0, 200);
+const double VIEWING_Z = -700.0f;
 
+// spheres info
 const Vector3 smallSpherePos = Vector3(-55, -25, -115);
 const Vector3 largeSpherePos = Vector3(0, 0, -45);
 const int SPHERE_RADIUS = 40;
 Sphere *smallSphere;
 Sphere *largeSphere;
 
+// plane info
 const Vector3 planeNormal = Vector3(0, 1, 0);
 const int PLANE_Y = -75;
 const int PLANE_MIN_X = -200;
 const int PLANE_MAX_X = 110;
 Plane *plane;
 
+// light info
 float ambLight[] = {0.5f, 0.5f, 0.5f};
 float lightColor[] = {1.0f, 1.0f, 1.0f};
-
 Vector3 lightPosition = Vector3(10, 100, 50);
 
-Vector3 lightTwoPosition = Vector3(-50, 100, 50);
-
+// air index of refraction
 float Ni = 1.0f;
+
+vector<Sphere*> *spheres = new vector<Sphere*>();
 
 void setMainViewport(int width, int height) {
     glViewport(0, 0, width, height);
@@ -129,8 +136,7 @@ void getRgb(Sphere *sphere, Vector3 point, float rgb[]) {
 }
 
 void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
-    Vector3 point = ray->getClosestIntersection(sphere);
-    getRgb(sphere, point, rgb);
+    getRgb(sphere, ray->getClosestIntersection(sphere), rgb);
 }
 
 void getRgb(Ray *ray, Plane *plane, float rgb[]) {
@@ -168,132 +174,78 @@ void illuminate(Ray *ray, int depth, float rgb[]) {
     rgb[1] = background[1];
     rgb[2] = background[2];
     
-    if (ray->intersectsSphere(largeSphere)) {
-        Vector3 point = ray->getClosestIntersection(largeSphere);
+    for (int index = 0; index < spheres->size(); index++) {
+        Sphere *sphere = spheres->at(index);
         
-        getRgb(largeSphere, point, rgb);
-        
-        if (depth < MAX_DEPTH) {
-            Vector3 n = point - largeSphere->origin;
-            Vector3 i(ray->direction);
-            n.normalize();
+        if (ray->intersectsSphere(sphere)) {
+            Vector3 point = ray->getClosestIntersection(sphere);
             
-            bool inside = ((-i * n) < 0);
+            getRgb(sphere, point, rgb);
             
-            if (largeSphere->Kr > 0.0f && !inside) {
-                float newRGB[3];
-                Ray *reflection;
+            if (depth < MAX_DEPTH) {
+                Vector3 n = point - sphere->origin;
+                Vector3 i(ray->direction);
+                n.normalize();
                 
-                point += n * 0.01f;
+                bool inside = ((-i * n) < 0);
                 
-                reflection = new Ray(point, i - 2 * (i * n) * n);
-                
-                illuminate(reflection, depth + 1, newRGB);
-                
-                delete(reflection);
-                
-                rgb[0] += newRGB[0] * largeSphere->Kr;
-                rgb[1] += newRGB[1] * largeSphere->Kr;
-                rgb[2] += newRGB[2] * largeSphere->Kr;
-                
-                point -= n * 0.01f;
-            }
-            
-            if (largeSphere->Kt > 0.0f) {
-                float newRGB[3];
-                Ray *transmission;
-                float Nit = Ni / largeSphere->Nt;
-                
-                if (inside) {
-                    Nit = largeSphere->Nt / Ni;
-                    n *= -1;
+                if (sphere->Kr > 0.0f && !inside) {
+                    float newRGB[3];
+                    Ray *reflection;
+                    
+                    point += n * 0.01f;
+                    
+                    reflection = new Ray(point, i - 2 * (i * n) * n);
+                    
+                    illuminate(reflection, depth + 1, newRGB);
+                    
+                    delete(reflection);
+                    
+                    rgb[0] += newRGB[0] * sphere->Kr;
+                    rgb[1] += newRGB[1] * sphere->Kr;
+                    rgb[2] += newRGB[2] * sphere->Kr;
+                    
+                    point -= n * 0.01f;
                 }
                 
-                float discriminate = 1 + (pow(Nit, 2) * (pow(-i * n, 2) - 1));
-                
-                point -= n * 0.001f;
-                
-                if (discriminate >= 0.0f) {
-                    transmission = new Ray(point, Nit * i +
-                                            (Nit * (-i * n) -
-                                             sqrt(discriminate)) * n
-                                           );
-                } else {
-                    transmission = new Ray(point, i - 2 * (i * n) * n);
+                if (sphere->Kt > 0.0f) {
+                    float newRGB[3];
+                    Ray *transmission;
+                    float Nit = Ni / sphere->Nt;
+                    
+                    if (inside) {
+                        Nit = sphere->Nt / Ni;
+                        n *= -1;
+                    }
+                    
+                    float discriminate = 1 + (pow(Nit, 2) * (pow(-i * n, 2) - 1));
+                    
+                    point -= n * 0.001f;
+                    
+                    if (discriminate >= 0.0f) {
+                        transmission = new Ray(point, Nit * i +
+                                               (Nit * (-i * n) -
+                                                sqrt(discriminate)) * n
+                                               );
+                    } else {
+                        transmission = new Ray(point, i - 2 * (i * n) * n);
+                    }
+                    
+                    illuminate(transmission, depth + 1, newRGB);
+                    
+                    delete(transmission);
+                    
+                    rgb[0] += newRGB[0] * sphere->Kt;
+                    rgb[1] += newRGB[1] * sphere->Kt;
+                    rgb[2] += newRGB[2] * sphere->Kt;
                 }
-                
-                illuminate(transmission, depth + 1, newRGB);
-                
-                delete(transmission);
-                
-                rgb[0] += newRGB[0] * largeSphere->Kt;
-                rgb[1] += newRGB[1] * largeSphere->Kt;
-                rgb[2] += newRGB[2] * largeSphere->Kt;
             }
+            
+            return;
         }
-    } else if (ray->intersectsSphere(smallSphere)) {
-        Vector3 point = ray->getClosestIntersection(smallSphere);
-        
-        getRgb(smallSphere, point, rgb);
-        
-        if (depth < MAX_DEPTH) {
-            Vector3 n = point - smallSphere->origin;
-            Vector3 i(ray->direction);
-            n.normalize();
-            bool inside = (-i * n < 0);
-            
-            if (smallSphere->Kr > 0.0f && !inside) {
-                float newRGB[3];
-                Ray *reflection;
-                
-                point += n * 0.01f;
-                
-                reflection = new Ray(point, i - 2 * (i * n) * n);
-                
-                illuminate(reflection, depth + 1, newRGB);
-                
-                delete(reflection);
-                
-                rgb[0] += newRGB[0] * smallSphere->Kr;
-                rgb[1] += newRGB[1] * smallSphere->Kr;
-                rgb[2] += newRGB[2] * smallSphere->Kr;
-                
-                point -= n * 0.01f;
-            }
-            
-            if (smallSphere->Kt > 0.0f) {
-                float newRGB[3];
-                Ray *transmission;
-                float Nit = Ni / smallSphere->Nt;
-                
-                if (inside) {
-                    Nit = smallSphere->Nt / Ni;
-                    n *= -1;
-                }
-                
-                float discriminate = 1 + (pow(Nit, 2) * (pow(-i * n, 2) - 1));
-                
-                point -= n * 0.001f;
-                
-                if (discriminate >= 0.0f) {
-                    transmission = new Ray(point, Nit * i +
-                                           (Nit * (-i * n) -
-                                            sqrt(discriminate)) * n
-                                           );
-                } else {
-                    transmission = new Ray(point, i - 2 * (i * n) * n);
-                }
-                
-                illuminate(transmission, depth + 1, newRGB);
-                
-                delete(transmission);
-                
-                rgb[0] += newRGB[0] * smallSphere->Kt;
-                rgb[1] += newRGB[1] * smallSphere->Kt;
-                rgb[2] += newRGB[2] * smallSphere->Kt;
-            }
-        }
-    } else if (ray->intersectsPlane(plane)) {
+    }
+    
+    if (ray->intersectsPlane(plane)) {
         getRgb(ray, plane, rgb);
     }
 }
@@ -330,7 +282,6 @@ void display() {
     shootRays(width, height);
 
     glutSwapBuffers();
-    //glutPostRedisplay();
 }
 
 void init() {
@@ -344,27 +295,10 @@ void init() {
     largeSphere->Nt = 0.95f;
     largeSphere->Kt = 0.85f;
     
+    spheres->push_back(largeSphere);
+    spheres->push_back(smallSphere);
+    
     plane = new Plane(planeNormal, PLANE_Y, PLANE_MIN_X, PLANE_MAX_X, yellow);
-}
-
-void specialKey(int key, int x, int y) {
-    if (key == GLUT_KEY_LEFT) {
-        lightPosition.x -= 10;
-    } else if (key == GLUT_KEY_RIGHT) {
-        lightPosition.x += 10;
-    } else if (key == GLUT_KEY_UP) {
-        lightPosition.z -= 10;
-    } else if (key == GLUT_KEY_DOWN) {
-        lightPosition.z += 10;
-    }
-}
-
-void keyPress(unsigned char c, int x, int y) {
-    if (c == 'a') {
-        lightPosition.y += 10;
-    } else if (c == 'z') {
-        lightPosition.y -= 10;
-    }
 }
 
 int main(int argc, char** argv) {
@@ -374,8 +308,6 @@ int main(int argc, char** argv) {
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("Ray Tracer");
 	glutDisplayFunc(display);
-    glutSpecialFunc(specialKey);
-    glutKeyboardFunc(keyPress);
     
 	init();
     
