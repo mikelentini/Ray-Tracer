@@ -56,8 +56,6 @@ float Ke = 10.0f;
 
 Vector3 lightPosition = Vector3(10, 100, 50);
 
-Vector3 lightTwoPosition = Vector3(-50, 100, 50);
-
 void setMainViewport(int width, int height) {
     glViewport(0, 0, width, height);
     
@@ -81,9 +79,8 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
     double ambComponent[] = {Ka * La[0], Ka * La[1], Ka * La[2]};
     
     Ray *shadowRay = new Ray(point, lightPosition);
-    //Ray *shadowRayTwo = new Ray(point, lightTwoPosition);
     
-    if (shadowRay->intersectsSphere(&sphere2)) {//|| shadowRayTwo->intersectsSphere(&sphere2)) {
+    if (shadowRay->intersectsSphere(&sphere2)) {
         r = ambComponent[0];
         g = ambComponent[1];
         b = ambComponent[2];
@@ -148,12 +145,9 @@ void traceRays(int width, int height) {
             } else if (ray->intersectsPlane(plane)) {
                 Vector3 point = ray->getClosestIntersection(plane);
                 Ray *shadowRay = new Ray(point, lightPosition);
-                Ray *shadowRayTwo = new Ray(point, lightTwoPosition);
                 
                 if (shadowRay->intersectsSphere(largeSphere) ||
-                        shadowRay->intersectsSphere(smallSphere)/* ||
-                        shadowRayTwo->intersectsSphere(largeSphere) ||
-                        shadowRayTwo->intersectsSphere(smallSphere)*/) {
+                        shadowRay->intersectsSphere(smallSphere)) {
                     rgb[0] = plane->color[0] * ambLight[0];
                     rgb[1] = plane->color[1] * ambLight[1];
                     rgb[2] = plane->color[2] * ambLight[2];
