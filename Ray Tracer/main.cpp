@@ -56,7 +56,7 @@ float Kd = 0.5f;
 float Ks = 0.3f;
 float Ke = 10.0f;
 
-Vector3 lightPosition = Vector3(10, 100, 50);
+Vector3 lightPosition = Vector3(100, 100, -20);
 
 Vector3 lightTwoPosition = Vector3(-50, 100, 50);
 
@@ -115,17 +115,46 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
         // phong
         float rvke = powf(ref * v, Ke);
         double specComponent[] = {Ks * (Li[0] * rvke), Ks * (Li[1] * rvke), Ks * (Li[2] * rvke)};
-        
-        // blinn
-        /*Vector3 h = (v + s);
-        h.normalize();
-        float spec = pow(h * n, Ke);
-        
-        double specComponent[] = { Ks * (Li[0] * spec), Ks * (Li[1] * spec), Ks * (Li[2] * spec) };*/
 
         r = ambComponent[0] + diffComponent[0] + specComponent[0];
         g = ambComponent[1] + diffComponent[1] + specComponent[1];
         b = ambComponent[2] + diffComponent[2] + specComponent[2];
+        
+        s = lightTwoPosition - point;
+        v = cameraPos - point;
+        n = point - sphere->origin;
+        
+        s.normalize();
+        v.normalize();
+        n.normalize();
+        
+        ref = s - 2 * (s * n) * n;
+        
+        ref.normalize();
+        
+        Li[0] = lightColor[0] * sphere->diffColor[0];
+        Li[1] = lightColor[1] * sphere->diffColor[1];
+        Li[2] = lightColor[2] * sphere->diffColor[2];
+        
+        sn = s * n;
+        
+        diffComponent[0] = Kd * (Li[0] * sn);
+        diffComponent[1] = Kd * (Li[1] * sn);
+        diffComponent[2] = Kd * (Li[2] * sn);
+        
+        Li[0] = lightColor[0] * sphere->specColor[0];
+        Li[1] = lightColor[1] * sphere->specColor[1];
+        Li[2] = lightColor[2] * sphere->specColor[2];
+        
+        // phong
+        rvke = powf(ref * v, Ke);
+        specComponent[0] = Ks * (Li[0] * rvke);
+        specComponent[1] = Ks * (Li[1] * rvke);
+        specComponent[2] = Ks * (Li[2] * rvke);
+        
+        r += ambComponent[0] + diffComponent[0] + specComponent[0];
+        g += ambComponent[1] + diffComponent[1] + specComponent[1];
+        b += ambComponent[2] + diffComponent[2] + specComponent[2];
     }
     
     rgb[0] = r;
@@ -133,6 +162,7 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
     rgb[2] = b;
     
     delete(shadowRay);
+    delete(shadowRayTwo);
 }
 
 void traceRays(int width, int height) {
