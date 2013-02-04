@@ -13,8 +13,6 @@
 #include "Ray.h"
 #include "Plane.h"
 
-#include <complex>
-
 #if defined(__APPLE__) && defined(__MACH__)
 #include <GLUT/glut.h>
 #else
@@ -83,9 +81,9 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
     double ambComponent[] = {Ka * La[0], Ka * La[1], Ka * La[2]};
     
     Ray *shadowRay = new Ray(point, lightPosition);
-    Ray *shadowRayTwo = new Ray(point, lightTwoPosition);
+    //Ray *shadowRayTwo = new Ray(point, lightTwoPosition);
     
-    if (shadowRay->intersectsSphere(&sphere2) || shadowRayTwo->intersectsSphere(&sphere2)) {
+    if (shadowRay->intersectsSphere(&sphere2)) {//|| shadowRayTwo->intersectsSphere(&sphere2)) {
         r = ambComponent[0];
         g = ambComponent[1];
         b = ambComponent[2];
@@ -112,16 +110,12 @@ void getRgb(Ray *ray, Sphere *sphere, float rgb[]) {
         Li[1] = lightColor[1] * sphere->specColor[1];
         Li[2] = lightColor[2] * sphere->specColor[2];
         
-        // phong
-        float rvke = powf(ref * v, Ke);
-        double specComponent[] = {Ks * (Li[0] * rvke), Ks * (Li[1] * rvke), Ks * (Li[2] * rvke)};
-        
         // blinn
-        /*Vector3 h = (v + s);
+        Vector3 h = (v + s);
         h.normalize();
         float spec = pow(h * n, Ke);
         
-        double specComponent[] = { Ks * (Li[0] * spec), Ks * (Li[1] * spec), Ks * (Li[2] * spec) };*/
+        double specComponent[] = { Ks * (Li[0] * spec), Ks * (Li[1] * spec), Ks * (Li[2] * spec) };
 
         r = ambComponent[0] + diffComponent[0] + specComponent[0];
         g = ambComponent[1] + diffComponent[1] + specComponent[1];
@@ -157,9 +151,9 @@ void traceRays(int width, int height) {
                 Ray *shadowRayTwo = new Ray(point, lightTwoPosition);
                 
                 if (shadowRay->intersectsSphere(largeSphere) ||
-                        shadowRay->intersectsSphere(smallSphere) ||
+                        shadowRay->intersectsSphere(smallSphere)/* ||
                         shadowRayTwo->intersectsSphere(largeSphere) ||
-                        shadowRayTwo->intersectsSphere(smallSphere)) {
+                        shadowRayTwo->intersectsSphere(smallSphere)*/) {
                     rgb[0] = plane->color[0] * ambLight[0];
                     rgb[1] = plane->color[1] * ambLight[1];
                     rgb[2] = plane->color[2] * ambLight[2];
