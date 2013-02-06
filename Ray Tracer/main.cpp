@@ -157,11 +157,23 @@ void getRgb(Ray *ray, Plane *plane, float rgb[]) {
         plane->color = yellow;
     }
     
-    if (shadowRay->intersectsSphere(largeSphere) ||
-        shadowRay->intersectsSphere(smallSphere)) {
-        rgb[0] = plane->color[0] * ambLight[0];
-        rgb[1] = plane->color[1] * ambLight[1];
-        rgb[2] = plane->color[2] * ambLight[2];
+    float ktEffect = 0.0f;
+    if (shadowRay->intersectsSphere(smallSphere)) {
+        if (smallSphere->Kt > 0.0f) {
+            ktEffect = smallSphere->Kt / 2.5f;
+        }
+        
+        rgb[0] = plane->color[0] * (ambLight[0] + ktEffect);
+        rgb[1] = plane->color[1] * (ambLight[1] + ktEffect);
+        rgb[2] = plane->color[2] * (ambLight[2] + ktEffect);
+    } else if (shadowRay->intersectsSphere(largeSphere)) {
+        if (largeSphere->Kt > 0.0f) {
+            ktEffect = largeSphere->Kt / 2.5f;
+        }
+        
+        rgb[0] = plane->color[0] * (ambLight[0] + ktEffect);
+        rgb[1] = plane->color[1] * (ambLight[1] + ktEffect);
+        rgb[2] = plane->color[2] * (ambLight[2] + ktEffect);
     } else {
         rgb[0] = plane->color[0];
         rgb[1] = plane->color[1];
