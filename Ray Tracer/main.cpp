@@ -305,7 +305,7 @@ void init() {
     largeSphere = new Sphere(largeSpherePos, SPHERE_RADIUS, gray, white, gray);
     largeSphere->Kr = 0.1f;
     largeSphere->Nt = 0.95f;
-    largeSphere->Kt = 0.85f;
+    largeSphere->Kt = 0.0f;
     
     spheres->push_back(largeSphere);
     spheres->push_back(smallSphere);
