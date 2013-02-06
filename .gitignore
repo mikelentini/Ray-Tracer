@@ -12,4 +12,5 @@
 *.la
 *.a
 
+Ray Tracer.xcodeproj/project.xcworkspace/xcuserdata/mikelentini.xcuserdatad/UserInterfaceState.xcuserstate
 .DS_Store
